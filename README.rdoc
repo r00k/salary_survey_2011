@@ -1,0 +1,3 @@
+This repo holds code and data related to a survey I did in 2011 asking Boston-based Rails developers about their salaries.
+
+For more details, see this blog post: http://codeulate.com/2011/04/2011-boston-rails-developer-salary-survey/
