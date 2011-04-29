@@ -24,4 +24,23 @@ class SalaryAverager
     @data.select { |entry| entry[3] == "No" }.map { |entry| entry[1] }.map(&:to_f)
   end
 
+  def skill_ratings
+    @data.map { |entry| entry[2] }.map(&:to_f)
+  end
+
 end
+
+class Array
+  def average
+    self.inject(&:+) / self.size.to_f
+  end
+end
+
+
+sa = SalaryAverager.new('data/data.csv')
+
+puts "Average freelancer salary: %d"     % sa.freelancer_salaries.average
+puts "Average non-freelancer salary: %d" % sa.non_freelancer_salaries.average
+puts "Average manager salary: %d"        % sa.manager_salaries.average
+puts "Average non-manager salary: %d"    % sa.non_manager_salaries.average
+puts "Average skill rating: %d"    % sa.skill_ratings.average

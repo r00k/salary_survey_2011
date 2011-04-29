@@ -30,5 +30,18 @@ describe SalaryAverager do
       @averager.non_manager_salaries.should == [110000.0]
     end
   end
+
+  describe "#skill_ratings" do 
+    it "returns the skill ratings for everyone" do
+      @averager.skill_ratings.should == [6,6,7,8]
+    end
+  end
+
+end
+
+describe "Goofy Array monkeypatch" do
+  it "averages the contents of an array" do
+    [2,4,6].average.should == 4
+  end
 end
 
