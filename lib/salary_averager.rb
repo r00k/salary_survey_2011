@@ -14,39 +14,34 @@ class SalaryAverager
   end
 
 
-  class Averager
-    def initialize(array)
-      @array = array.map(&:to_i)
-    end
-
+  class Averager < Array
     def average
-      @array.inject(&:+) / @array.size
+      inject(&:+) / size
     end
 
     def median
-      size = @array.size
       if size.odd?
-        @array.sort[size / 2]
+        sort[size / 2]
       else
-        (@array.sort[size / 2 - 1] + @array.sort[size / 2]) / 2
+        (sort[size / 2 - 1] + sort[size / 2]) / 2
       end
     end
 
     def report
       return too_small_message if sample_size_too_small?
-      "#{@array.size} respondents.  Average: #{average}.   Median: #{median}."
+      "#{size} respondents.  Average: #{average}.   Median: #{median}."
     end
 
     def sample_size_too_small?
-      @array.size < 3
+      size < 3
     end
 
     def too_small_message
-      case count = @array.size
+      case count = size
       when 0
         "No respondents!"
       when 1, 2
-        "Only #{count} respondent(s) -- sample size too small."
+        "Sample size too small for anonymous reporting."
       end
     end
   end
