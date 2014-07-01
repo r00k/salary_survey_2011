@@ -3,7 +3,7 @@ require 'rspec'
 require 'salary_averager'
 
 describe SalaryAverager do
-  let(:averager) { SalaryAverager.new("spec/fake_data.csv") }
+  let(:averager) { SalaryAverager.new("spec/fake_data2013.csv") }
 
   describe "#freelancer_salaries" do
     it "returns all salaries for people who are freelancers" do
