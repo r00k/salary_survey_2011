@@ -1,25 +1,19 @@
 require 'rubygems'
 require 'csv'
 
+# Usage:
+# file_path = File.expand_path('data/data2013.csv', File.dirname(__FILE__))
+# puts SalaryAverager.new(file_path).salary_report
 class SalaryAverager
-
-  class Selector
-    def self.salary_column=(column)
-      @@column = column
-    end
-
-    def self.salaries_from(rows)
-      rows.map { |row| row[@@column].to_i }
-    end
-  end
-
 
   class Averager < Array
     def average
+      return nil if empty?
       inject(&:+) / size
     end
 
     def median
+      return nil if empty?
       if size.odd?
         sort[size / 2]
       else
@@ -47,51 +41,88 @@ class SalaryAverager
   end
 
 
-  def initialize(file_path)
-    @data = CSV.read(file_path)
-    column_headers = @data.shift
-    parse_headers(column_headers)
+  class MalformedSpreadsheetError < ArgumentError
+    def message
+      msg = "Spreadsheet must have column headers that include 'work status' or 'freelance',"
+      msg += "'manage' or 'tell other developers', and 'salary'.\n"
+      msg + super()
+    end
   end
 
-  def parse_headers(headers)
-    unless headers.find_index { |entry| /salary/ =~ entry }
-      raise 'Spreadsheet must have column headers that include "work status" or "freelancer", "salary", and "tell other developers".'
+
+  def initialize(file_path)
+    @data = CSV.read(file_path)
+    process_headers(@data.shift)
+  end
+
+  def process_headers(headers)
+    @employment_column = headers.find_index { |entry| /(work status|freelance)/i =~ entry }
+    @manager_column    = headers.find_index { |entry| /(manage|tell other developers)/i =~ entry }
+    @skill_column      = headers.find_index { |entry| /(skill|ability)/i =~ entry }
+    @salary_column     = headers.find_index { |entry| /salary/i =~ entry }
+
+    unless @employment_column && @manager_column && @salary_column # skill column is optional
+      e = MalformedSpreadsheetError.new
+      raise e
     end
-    @employment_column      = headers.find_index { |entry| /work status/i =~ entry || /freelancer/i =~ entry }
-    @manager_column         = headers.find_index { |entry| /tell other developers/i =~ entry }
-    Selector.salary_column  = headers.find_index { |entry| /salary/i =~ entry }
+  end
+
+  def entry_count
+    @data.size
   end
 
   def freelancers
-    @data.select { |entry| /freelance/i =~ entry[@employment_column] }
+    @data.select { |row| /freelance/i =~ row[@employment_column] }
   end
 
   def non_freelancers
-    @data.reject { |entry| /freelance/i =~ entry[@employment_column] }
+    @data.reject { |row| /freelance/i =~ row[@employment_column] }
   end
 
   def managers
-    @data.select { |entry| entry[@manager_column] == "Yes" }
+    @data.select { |row| row[@manager_column] == "Yes" }
   end
 
   def non_managers
-    @data.select { |entry| entry[@manager_column] == "No" }
+    @data.select { |row| row[@manager_column] == "No" }
   end
 
-  def salaries(rows)
-    Averager.new(Selector.salaries_from(rows))
+  def salaries_from(rows)
+    rows.map { |row| row[@salary_column].to_i }
+  end
+
+  def skill_ratings
+    if @skill_column
+      @data.map { |row| row[@skill_column] }.map(&:to_f)
+    end
+  end
+
+  def freelancer_salaries
+    salaries_from(freelancers)
+  end
+
+  def non_freelancer_salaries
+    salaries_from(non_freelancers)
+  end
+
+  def manager_salaries
+    salaries_from(managers)
+  end
+
+  def non_manager_salaries
+    salaries_from(non_managers)
+  end
+
+  def report(salaries)
+    Averager.new(salaries).report
   end
 
   def salary_report
-    "#{@data.size} people responded to the survey.\n" <<
-      "Freelancers:     #{salaries(freelancers).report}\n" <<
-      "Non-freelancers: #{salaries(non_freelancers).report}\n" <<
-      "Managers:        #{salaries(managers).report}\n" <<
-      "Non-managers:    #{salaries(non_managers).report}"
+    "#{entry_count} people responded to the survey.\n" <<
+      "Freelancers:     #{report(freelancer_salaries)}\n" <<
+      "Non-freelancers: #{report(non_freelancer_salaries)}\n" <<
+      "Managers:        #{report(manager_salaries)}\n" <<
+      "Non-managers:    #{report(non_manager_salaries)}"
   end
 
 end
-
-
-file_path = File.expand_path('../data/data.csv', File.dirname(__FILE__))
-puts SalaryAverager.new(file_path).salary_report
