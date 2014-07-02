@@ -79,8 +79,8 @@ class SalaryAverager
     @data.reject { |row| /(freelance|Yes)/i =~ row[@employment_column] }
   end
 
-  def managers
-    @data.select { |row| row[@manager_column] == "Yes" }
+  def managers(data = @data)
+    data.select { |row| row[@manager_column] == "Yes" }
   end
 
   def non_managers(data = @data)
@@ -117,6 +117,10 @@ class SalaryAverager
     salaries_from(non_managers(non_freelancers))
   end
 
+  def manager_non_freelancer_salaries
+    salaries_from(managers(non_freelancers))
+  end
+
   def report(salaries)
     Averager.new(salaries).report
   end
@@ -127,6 +131,7 @@ class SalaryAverager
       "Non-freelancers: #{report(non_freelancer_salaries)}\n" <<
       "Managers:        #{report(manager_salaries)}\n" <<
       "Non-managers:    #{report(non_manager_salaries)}\n" <<
+      "Manager non-freelancers:        #{report(manager_non_freelancer_salaries)}\n" <<
       "Non-manager non-freelancers:    #{report(non_manager_non_freelancer_salaries)}"
   end
 
