@@ -72,11 +72,11 @@ class SalaryAverager
   end
 
   def freelancers
-    @data.select { |row| /freelance/i =~ row[@employment_column] }
+    @data.select { |row| /(freelance|Yes)/i =~ row[@employment_column] }
   end
 
   def non_freelancers
-    @data.reject { |row| /freelance/i =~ row[@employment_column] }
+    @data.reject { |row| /(freelance|Yes)/i =~ row[@employment_column] }
   end
 
   def managers
